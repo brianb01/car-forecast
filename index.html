@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car Forecast</title>
+<style>
+  /* ---- Tokens ---------------------------------------------------------- */
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --text: #1d1d1f;
+    --muted: #6b6b70;
+    --border: #e2e0db;
+    --accent: #b3121b;
+    --tier-bg: #1d1d1f;
+    --tier-text: #ffffff;
+    --exclude: #8a5a00;
+    --radius: 10px;
+    --gap: 16px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141416;
+      --surface: #1e1e21;
+      --text: #ececee;
+      --muted: #9a9aa2;
+      --border: #303035;
+      --accent: #ff5a5f;
+      --tier-bg: #2a2a2f;
+      --tier-text: #ffffff;
+      --exclude: #e0a640;
+    }
+  }
+
+  /* ---- Base ------------------------------------------------------------ */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+  h1 {
+    margin: 40px 0 16px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1:first-child { margin-top: 0; }
+
+  /* ---- Tiers (Ready in YEAR | $range) ---------------------------------- */
+  .tier { margin-bottom: 32px; }
+  .tier-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0 0 var(--gap);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    background: var(--tier-bg);
+    color: var(--tier-text);
+    font-size: 18px;
+  }
+  .tier-head .budget {
+    font-weight: 400;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+  }
+  .tier-empty {
+    margin: 0;
+    padding: 12px 16px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+  }
+
+  /* ---- Car cards ------------------------------------------------------- */
+  .cars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--gap);
+  }
+  .car {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .car h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+  }
+  .car.have {
+    max-width: 560px;
+    border-left: 4px solid var(--accent);
+  }
+  .car.have h2 { margin: 0 0 10px; font-size: 20px; }
+
+  /* ---- Spec list (label / value) --------------------------------------- */
+  .specs {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 12px;
+    margin: 0;
+  }
+  .specs dt { font-weight: 600; color: var(--muted); }
+  .specs dd { margin: 0; }
+  .specs ul { margin: 2px 0 0; padding-left: 18px; }
+  .exclude { display: block; color: var(--exclude); }
+  .exclude::before { content: "Exclude: "; font-weight: 600; }
+
+  @media (max-width: 420px) {
+    .specs { grid-template-columns: 1fr; gap: 0; }
+    .specs dd { margin-bottom: 6px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Have</h1>
+
+  <article class="car have">
+    <h2>2018 Porsche Cayman 718</h2>
+    <dl class="specs">
+      <dt>Trim</dt><dd>Base 2.0L Turbo</dd>
+      <dt>Transmission</dt><dd>PDK</dd>
+      <dt>Exterior</dt><dd>Guards Red</dd>
+      <dt>Interior</dt><dd>Black/Beige</dd>
+      <dt>Seats</dt><dd>Sport seats</dd>
+      <dt>Audio</dt><dd>Bose</dd>
+      <dt>Suspension/Options</dt><dd>No PASM or Sport Chrono</dd>
+    </dl>
+  </article>
+
+  <h1>Want</h1>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2026 <span class="budget">$50k–$80k</span></h2>
+    <div class="cars">
+
+      <article class="car">
+        <h3>Cayman S</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2020+</dd>
+          <dt>Must have</dt><dd>PDK, PASM, 14-way seats</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Taycan 4S</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2021+</dd>
+          <dt>Must have</dt><dd>PASM, Air suspension</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Macan Electric</h3>
+        <dl class="specs">
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Chevrolet Corvette Stingray</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2021+</dd>
+          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+          <dt>Acceptable combinations</dt><dd><ul>
+            <li>Torch Red over Tan or Black</li>
+            <li>Rapid Blue over Black, Tan, or Blue</li>
+          </ul></dd>
+          <dt>Exclude</dt><dd>Red Mist</dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Porsche 911 Carrera 4 (997)</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2010–2012 (avoiding the 2009 first model year of the 997.2; 2012 was the last 997 year)</dd>
+          <dt>Trim</dt><dd>Carrera 4, not the base Carrera (the all-wheel-drive cars have the wider rear body)</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2027 <span class="budget">$80k–$120k</span></h2>
+    <div class="cars">
+
+      <article class="car">
+        <h3>Ferrari California</h3>
+        <dl class="specs">
+          <dt>Preferred years</dt><dd>2012–2014</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Chevrolet Corvette E-Ray</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2024+ (first model year)</dd>
+          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+          <dt>Acceptable combinations</dt><dd><ul>
+            <li>Torch Red over Tan or Black</li>
+            <li>Rapid Blue over Black, Tan, or Blue</li>
+          </ul></dd>
+          <dt>Exclude</dt><dd>Red Mist</dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Porsche 911 Carrera 4 / 4S (991)</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2014+ (avoiding the 2013 first model year of the 991 Carrera 4)</dd>
+          <dt>Trim</dt><dd>Carrera 4 or 4S, not the base Carrera or Carrera S (the all-wheel-drive cars have the wider rear body)</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Lexus LC 500</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>Convertible 2021+ (first model year of the convertible); coupe 2018+</dd>
+          <dt>Body style</dt><dd>Convertible preferred; coupe acceptable</dd>
+          <dt>Powertrain</dt><dd>LC 500 V8 only, not the LC 500h hybrid</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, or Green only</dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2028 <span class="budget">$120k–$160k</span></h2>
+    <div class="cars">
+
+      <article class="car">
+        <h3>Chevrolet Corvette Z06 (C8)</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2023+ (first model year)</dd>
+          <dt>Trim</dt><dd>2LZ</dd>
+          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+          <dt>Acceptable combinations</dt><dd><ul>
+            <li>Torch Red over Tan or Black</li>
+            <li>Rapid Blue over Black, Tan, or Blue</li>
+          </ul></dd>
+          <dt>Exclude</dt><dd>Red Mist</dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Ferrari California T</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2016+ (avoiding the 2015 first model year)</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Ferrari 360 Modena Coupe</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2003–2004 (last two years of production)</dd>
+          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Porsche 911 Carrera (992)</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2021+ (avoiding the 2020 first model year)</dd>
+          <dt>Trim</dt><dd>Base Carrera (every 992 has the wide body)</dd>
+          <dt>Exterior colors</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+            <span class="exclude">White, Black, Silver, Gray, Pink</span></dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2029 <span class="budget">$160k–$220k</span></h2>
+    <div class="cars">
+
+      <article class="car">
+        <h3>Ferrari F430 Coupe</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2006+ (avoiding the 2005 first model year)</dd>
+          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+      <article class="car">
+        <h3>Ferrari Portofino</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2019+ (avoiding the 2018 first model year)</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2030 <span class="budget">$220k–$260k</span></h2>
+    <p class="tier-empty">Nothing here yet.</p>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="tier">
+    <h2 class="tier-head">Ready in 2031 <span class="budget">$260k–$300k</span></h2>
+    <div class="cars">
+
+      <article class="car">
+        <h3>Ferrari 488 Spider</h3>
+        <dl class="specs">
+          <dt>Year</dt><dd>2017+ (avoiding the 2016 first model year)</dd>
+          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+            <span class="exclude">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
