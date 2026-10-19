@@ -15,6 +15,7 @@
     --hover: #f2f2ef;
     --accent: #b3121b;
     --avoid: #8a4b00;
+    --money: #1a7f37;
     --radius: 12px;
     color-scheme: light dark;
   }
@@ -28,6 +29,7 @@
       --hover: #232327;
       --accent: #ff6b70;
       --avoid: #e8ad55;
+      --money: #4cc76b;
     }
   }
 
@@ -56,24 +58,32 @@
   .page-head p { margin: 0; color: var(--muted); }
 
   /* ---- Sections (Currently own / Ready in YEAR) ------------------------ */
-  section { margin-bottom: 48px; }
+  section { margin-bottom: 32px; }
   .section-head {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
+    align-items: center;
     gap: 4px 16px;
+    min-height: 56px;
     margin: 0 0 12px;
-    padding: 0 4px;
+    padding: 8px 12px;
+    border-radius: 10px;
   }
   .section-head h2 {
-    margin: 0;
-    font-size: 20px;
+    margin: 0 auto 0 0;
+    font-size: 22px;
   }
   .section-head .budget {
-    color: var(--muted);
+    color: var(--money);
+    font-size: 22px;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
+
+  /* Year sections collapse; years not yet ready start closed */
+  .year > summary { cursor: pointer; list-style: none; }
+  .year > summary:hover { background: var(--hover); }
+  .year:not([open]) > summary { margin-bottom: 0; }
   .empty {
     margin: 0;
     padding: 18px 20px;
@@ -94,7 +104,7 @@
   }
   .cars > li + li { border-top: 1px solid var(--border); }
 
-  summary {
+  .cars summary {
     display: grid;
     grid-template-columns: 112px 1fr 20px;
     align-items: center;
@@ -105,7 +115,7 @@
     list-style: none;
   }
   summary::-webkit-details-marker { display: none; }
-  summary:hover { background: var(--hover); }
+  .cars summary:hover { background: var(--hover); }
   summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .make {
     color: var(--muted);
@@ -121,7 +131,7 @@
     color: var(--muted);
     transition: transform 0.15s ease;
   }
-  details[open] .chevron { transform: rotate(180deg); }
+  details[open] > summary .chevron { transform: rotate(180deg); }
 
   /* ---- Spec list (label / value) --------------------------------------- */
   .specs {
@@ -140,7 +150,7 @@
   @media (max-width: 600px) {
     main { padding-top: 40px; }
     .page-head { margin-bottom: 40px; }
-    summary {
+    .cars summary {
       grid-template-columns: 1fr 20px;
       gap: 2px 12px;
     }
@@ -188,246 +198,264 @@
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year" open>
+    <summary class="section-head">
       <h2>Ready in 2026</h2><span class="budget">$50k–$80k</span>
-    </div>
-    <ul class="cars">
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">Cayman S</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2020+</dd>
-          <dt>Must have</dt><dd>PDK, PASM, 14-way seats</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">Taycan 4S</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+</dd>
-          <dt>Must have</dt><dd>PASM, Air suspension</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">Macan Electric</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Chevrolet</span><span class="model">Corvette Stingray</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd><ul>
-            <li>Torch Red over Tan or Black</li>
-            <li>Rapid Blue over Black, Tan, or Blue</li>
-          </ul>
-            <span class="avoid">Red Mist</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">911 Carrera 4 (997)</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2010–2012 (avoiding the 2009 first model year of the 997.2; 2012 was the last 997 year)</dd>
-          <dt>Trim</dt><dd>Carrera 4, not the base Carrera (the all-wheel-drive cars have the wider rear body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-    </ul>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <ul class="cars">
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">Cayman S</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2020+</dd>
+            <dt>Must have</dt><dd>PDK, PASM, 14-way seats</dd>
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">Taycan 4S</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2021+</dd>
+            <dt>Must have</dt><dd>PASM, Air suspension</dd>
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">Macan Electric</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Chevrolet</span><span class="model">Corvette Stingray</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2021+</dd>
+            <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+            <dt>Colors</dt><dd><ul>
+              <li>Torch Red over Tan or Black</li>
+              <li>Rapid Blue over Black, Tan, or Blue</li>
+            </ul>
+              <span class="avoid">Red Mist</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">911 Carrera 4 (997)</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2010–2012 (avoiding the 2009 first model year of the 997.2; 2012 was the last 997 year)</dd>
+            <dt>Trim</dt><dd>Carrera 4, not the base Carrera (the all-wheel-drive cars have the wider rear body)</dd>
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+      </ul>
+    </details>
   </section>
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year">
+    <summary class="section-head">
       <h2>Ready in 2027</h2><span class="budget">$80k–$120k</span>
-    </div>
-    <ul class="cars">
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">California</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2012–2014 preferred</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Chevrolet</span><span class="model">Corvette E-Ray</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2024+ (first model year)</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd><ul>
-            <li>Torch Red over Tan or Black</li>
-            <li>Rapid Blue over Black, Tan, or Blue</li>
-          </ul>
-            <span class="avoid">Red Mist</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">911 Carrera 4 / 4S (991)</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2014+ (avoiding the 2013 first model year of the 991 Carrera 4)</dd>
-          <dt>Trim</dt><dd>Carrera 4 or 4S, not the base Carrera or Carrera S (the all-wheel-drive cars have the wider rear body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Lexus</span><span class="model">LC 500</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>Convertible 2021+ (first model year of the convertible); coupe 2018+</dd>
-          <dt>Body style</dt><dd>Convertible preferred; coupe acceptable</dd>
-          <dt>Powertrain</dt><dd>LC 500 V8 only, not the LC 500h hybrid</dd>
-          <dt>Exterior</dt><dd>Red, Blue, or Green only</dd>
-        </dl>
-      </details></li>
-
-    </ul>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <ul class="cars">
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">California</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2012–2014 preferred</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Chevrolet</span><span class="model">Corvette E-Ray</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2024+ (first model year)</dd>
+            <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+            <dt>Colors</dt><dd><ul>
+              <li>Torch Red over Tan or Black</li>
+              <li>Rapid Blue over Black, Tan, or Blue</li>
+            </ul>
+              <span class="avoid">Red Mist</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">911 Carrera 4 / 4S (991)</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2014+ (avoiding the 2013 first model year of the 991 Carrera 4)</dd>
+            <dt>Trim</dt><dd>Carrera 4 or 4S, not the base Carrera or Carrera S (the all-wheel-drive cars have the wider rear body)</dd>
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Lexus</span><span class="model">LC 500</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>Convertible 2021+ (first model year of the convertible); coupe 2018+</dd>
+            <dt>Body style</dt><dd>Convertible preferred; coupe acceptable</dd>
+            <dt>Powertrain</dt><dd>LC 500 V8 only, not the LC 500h hybrid</dd>
+            <dt>Exterior</dt><dd>Red, Blue, or Green only</dd>
+          </dl>
+        </details></li>
+  
+      </ul>
+    </details>
   </section>
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year">
+    <summary class="section-head">
       <h2>Ready in 2028</h2><span class="budget">$120k–$160k</span>
-    </div>
-    <ul class="cars">
-
-      <li><details>
-        <summary><span class="make">Chevrolet</span><span class="model">Corvette Z06 (C8)</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2023+ (first model year)</dd>
-          <dt>Trim</dt><dd>2LZ</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd><ul>
-            <li>Torch Red over Tan or Black</li>
-            <li>Rapid Blue over Black, Tan, or Blue</li>
-          </ul>
-            <span class="avoid">Red Mist</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">California T</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2016+ (avoiding the 2015 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">360 Modena Coupe</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2003–2004 (last two years of production)</dd>
-          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Porsche</span><span class="model">911 Carrera (992)</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+ (avoiding the 2020 first model year)</dd>
-          <dt>Trim</dt><dd>Base Carrera (every 992 has the wide body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
-        </dl>
-      </details></li>
-
-    </ul>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <ul class="cars">
+  
+        <li><details>
+          <summary><span class="make">Chevrolet</span><span class="model">Corvette Z06 (C8)</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2023+ (first model year)</dd>
+            <dt>Trim</dt><dd>2LZ</dd>
+            <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
+            <dt>Colors</dt><dd><ul>
+              <li>Torch Red over Tan or Black</li>
+              <li>Rapid Blue over Black, Tan, or Blue</li>
+            </ul>
+              <span class="avoid">Red Mist</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">California T</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2016+ (avoiding the 2015 first model year)</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">360 Modena Coupe</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2003–2004 (last two years of production)</dd>
+            <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Porsche</span><span class="model">911 Carrera (992)</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2021+ (avoiding the 2020 first model year)</dd>
+            <dt>Trim</dt><dd>Base Carrera (every 992 has the wide body)</dd>
+            <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
+              <span class="avoid">White, Black, Silver, Gray, Pink</span></dd>
+          </dl>
+        </details></li>
+  
+      </ul>
+    </details>
   </section>
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year">
+    <summary class="section-head">
       <h2>Ready in 2029</h2><span class="budget">$160k–$220k</span>
-    </div>
-    <ul class="cars">
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">F430 Coupe</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2006+ (avoiding the 2005 first model year)</dd>
-          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">Portofino</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2019+ (avoiding the 2018 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-    </ul>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <ul class="cars">
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">F430 Coupe</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2006+ (avoiding the 2005 first model year)</dd>
+            <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">Portofino</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2019+ (avoiding the 2018 first model year)</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+      </ul>
+    </details>
   </section>
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year">
+    <summary class="section-head">
       <h2>Ready in 2030</h2><span class="budget">$220k–$260k</span>
-    </div>
-    <p class="empty">No cars picked yet.</p>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <p class="empty">No cars picked yet.</p>
+    </details>
   </section>
 
   <!-- ================================================================== -->
   <section>
-    <div class="section-head">
+    <details class="year">
+    <summary class="section-head">
       <h2>Ready in 2031</h2><span class="budget">$260k–$300k</span>
-    </div>
-    <ul class="cars">
-
-      <li><details>
-        <summary><span class="make">Ferrari</span><span class="model">488 Spider</span>
-          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2017+ (avoiding the 2016 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
-        </dl>
-      </details></li>
-
-    </ul>
+      <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+    </summary>
+      <ul class="cars">
+  
+        <li><details>
+          <summary><span class="make">Ferrari</span><span class="model">488 Spider</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
+          <dl class="specs">
+            <dt>Year</dt><dd>2017+ (avoiding the 2016 first model year)</dd>
+            <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
+            <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
+              <span class="avoid">Beige Tradizione, Terra Bruciata, Crema</span></dd>
+          </dl>
+        </details></li>
+  
+      </ul>
+    </details>
   </section>
 
 </main>
