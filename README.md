@@ -1,4 +1,4 @@
-# Car Forecast
+# Car Planning
 
 A one-page plan for future car purchases: the car I own now, and the cars I'm looking for,
 grouped by the year I expect to be ready to buy and the budget for that year.
@@ -8,7 +8,7 @@ grouped by the year I expect to be ready to buy and the budget for that year.
 ## How the page is organized
 
 - **Currently own:** the car I have now.
-- **Ready in YEAR | $budget:** one section per year. Each heading means "by this year, this
+- **Target YEAR | $budget:** one section per year. Each heading means "by this year, this
   is what I can spend". A car is listed under the budget that matches what it costs **today**;
   no attempt is made to predict depreciation. Each year can be collapsed; the nearest year
   starts open and later years start closed.
