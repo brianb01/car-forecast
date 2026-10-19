@@ -10,7 +10,8 @@ grouped by the year I expect to be ready to buy and the budget for that year.
 - **Currently own:** the car I have now.
 - **Ready in YEAR | $budget:** one section per year. Each heading means "by this year, this
   is what I can spend". A car is listed under the budget that matches what it costs **today**;
-  no attempt is made to predict depreciation.
+  no attempt is made to predict depreciation. Each year can be collapsed; the nearest year
+  starts open and later years start closed.
 - Each car shows only its make and model. Tap or click it to see the details: years,
   trim, must-have options, and the exterior and interior colors I want or want to avoid.
 - A year with nothing in it yet stays on the page as a placeholder.
