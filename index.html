@@ -1,277 +1,68 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0f0f11">
+<meta name="color-scheme" content="light dark">
 <title>Car Planning</title>
+<script>
+  // Apply the visitor's saved light/dark choice before first paint (no flash).
+  try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-bs-theme', t); } catch (e) {}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
 <style>
-  /* Design: Claude Design "1c · REDESIGN — DARK". Dark-only by design. */
-
-  /* ---- Tokens ---------------------------------------------------------- */
-  :root {
-    --bg: #0f0f11;
-    --surface: #17171a;
-    --text: #ececee;
-    --muted: #a0a0a8;
-    --border: #2a2a2f;
-    --hover: #1f1f23;
-    --open: #1b1b1f;
-    --chip: #232327;
-    --accent: #ff6b70;
-    --accent-soft: #3a1c1e;
-    --money: #4cc76b;
-    --money-soft: #16301e;
-    --avoid: #e8ad55;
-    --avoid-soft: #2e2414;
-    --dot-ring: rgba(255, 255, 255, .22);
-    --col: #1b1b1f;
-    --col-open: #14261a;
-    --sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-    color-scheme: dark;
-  }
+  /* Design: Claude Design "Car Planning v2" (Bootstrap 5.3 + Bootstrap Icons, light with a
+     dark toggle). Bootstrap supplies the layout; this block holds only what the design styled
+     inline. Sizes are in rem so the scaling rule below reaches them. */
 
   /* ---- Base ------------------------------------------------------------ */
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: 16px/1.55 var(--sans);
+  :root {
+    --bs-body-font-family: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   }
-  main {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 64px 16px 96px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-  }
-  button { font: inherit; color: inherit; }
-  summary { list-style: none; cursor: pointer; }
+  /* Everything is sized in rem, so this one rule scales the whole page like browser zoom.
+     It stays at the browser default (16px) until the window is ~1440px wide, then grows
+     with the width (90rem fills the screen), but no taller than lets a 42rem column fit
+     on screen, and stops at 2x. */
+  html { font-size: clamp(1rem, min(100vw / 90, 100vh / 42), 2rem); }
+  /* Bootstrap caps .container-xl at 1320px; in rem it grows with the scaling above. */
+  @media (min-width: 1400px) { .container-xl { max-width: 82.5rem; } }
+  summary { list-style: none; }
   summary::-webkit-details-marker { display: none; }
-  summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-  .chev { width: 20px; height: 20px; color: var(--muted); transition: transform .2s ease; }
-  details[open] > summary .chev { transform: rotate(180deg); }
+  .min-w-0 { min-width: 0; }
+  .mono { font-family: var(--mono); }
+  .tnum { font-variant-numeric: tabular-nums; }
 
   /* ---- Page header ----------------------------------------------------- */
-  .page-head { display: flex; flex-direction: column; gap: 10px; }
-  .kicker {
-    font: 500 12px/1 var(--mono);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .page-head h1 {
-    margin: 0;
-    font-size: 44px;
-    line-height: 1.05;
-    font-weight: 600;
-    letter-spacing: -0.035em;
-  }
-  .page-head p { margin: 0; max-width: 520px; color: var(--muted); text-wrap: pretty; }
+  .kicker { font-family: var(--mono); letter-spacing: .12em; }
+  .page-title { letter-spacing: -0.03em; }
+  .page-lead { max-width: 35rem; text-wrap: pretty; }
+  .side-sticky { top: 5.5rem; z-index: 1; }
 
-  /* ---- Budget ladder --------------------------------------------------- */
-  .ladder {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 20px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  /* ---- Car rows (shared by Available for trade and the years) ---------- */
+  .make { font-family: var(--mono); letter-spacing: .06em; font-size: .6875rem; }
+  .car > summary, .owned-car > summary { cursor: pointer; }
+  .car > summary:focus-visible, .owned-car > summary:focus-visible {
+    outline: .125rem solid var(--bs-danger);
+    outline-offset: -.125rem;
   }
-  .ladder-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .ladder-title { font-size: 14px; font-weight: 600; }
-  .ladder-sum { font: 400 12px/1 var(--mono); color: var(--muted); margin-right: auto; }
-  .pill {
-    font: 500 13px/1 var(--sans);
-    background: var(--chip);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 8px 14px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .ladder-scroll { overflow-x: auto; overflow-y: hidden; }
-  .ladder-cols { display: grid; grid-template-columns: repeat(6, minmax(64px, 1fr)); gap: 8px; }
-  .col {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    text-align: left;
-  }
-  .col-box {
-    position: relative;
-    display: block;
-    height: 132px;
-    width: 100%;
-    border-radius: 8px;
-    background: var(--col);
-    border-bottom: 1px solid var(--border);
-  }
-  .bar {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    border-radius: 4px;
-    background: var(--money-soft);
-    box-shadow: inset 0 0 0 1px var(--money);
-  }
-  .bar-label {
-    position: absolute;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font: 500 11px/1 var(--mono);
-    color: var(--money);
-    font-variant-numeric: tabular-nums;
-  }
-  .col:nth-child(1) .bar { bottom: 21.33px; height: 10.4px; }
-  .col:nth-child(1) .bar-label { bottom: 37.73px; }
-  .col:nth-child(2) .bar { bottom: 31.73px; height: 13.87px; }
-  .col:nth-child(2) .bar-label { bottom: 51.6px; }
-  .col:nth-child(3) .bar { bottom: 45.6px; height: 13.87px; }
-  .col:nth-child(3) .bar-label { bottom: 65.47px; }
-  .col:nth-child(4) .bar { bottom: 59.47px; height: 20.8px; }
-  .col:nth-child(4) .bar-label { bottom: 86.27px; }
-  .col:nth-child(5) .bar { bottom: 80.27px; height: 13.87px; }
-  .col:nth-child(5) .bar-label { bottom: 100.13px; }
-  .col:nth-child(6) .bar { bottom: 94.13px; height: 13.87px; }
-  .col:nth-child(6) .bar-label { bottom: 114px; }
-  .col-meta { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; }
-  .col-year { font: 600 15px/1.2 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
-  .col-count { font: 400 12px/1.2 var(--sans); color: var(--muted); }
-  .col.open .col-box { background: var(--col-open); }
-  .col.open .bar { background: var(--money); }
-  .col.open .col-year { color: var(--text); }
-
-  /* ---- Currently own --------------------------------------------------- */
-  .owned { display: flex; flex-direction: column; gap: 12px; }
-  .eyebrow {
-    font: 500 12px/1 var(--mono);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0 4px;
-  }
-  .owned .cars > li > .car > summary { min-height: 72px; padding: 14px 20px; }
-  .owned .model { font-size: 20px; letter-spacing: -0.015em; }
-  .owned .specs { padding-top: 6px; }
-  .owned-badge {
-    font: 500 12px/1 var(--mono);
-    color: var(--accent);
-    background: var(--accent-soft);
-    border-radius: 999px;
-    padding: 6px 10px;
-  }
-
-  /* ---- Year sections --------------------------------------------------- */
-  .years { display: flex; flex-direction: column; }
-  .year-sec { border-top: 1px solid var(--border); padding: 8px 0; }
-  .year > summary {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    min-height: 64px;
-    padding: 8px 12px;
-    margin: 0 -12px;
-    border-radius: 12px;
-  }
-  .year > summary:hover { background: var(--hover); }
-  .year-title { display: flex; flex-direction: column; gap: 2px; margin-right: auto; }
-  .year-kicker {
-    font: 500 11px/1 var(--mono);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .year-num {
-    font-size: 30px;
-    line-height: 1.1;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
-  }
-  .year-count { font: 400 13px/1 var(--sans); color: var(--muted); }
-  .money {
-    font: 600 15px/1 var(--mono);
-    color: var(--money);
-    background: var(--money-soft);
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-  .year-chev {
-    width: 32px;
-    height: 32px;
-    flex: none;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .year-chev .chev { width: 16px; height: 16px; }
-  .year-body { padding: 8px 0 16px; }
-  .empty {
-    margin: 0;
-    padding: 20px;
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    color: var(--muted);
-    font-size: 15px;
-  }
-
-  /* ---- Car list -------------------------------------------------------- */
-  .cars {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-  .car { background: var(--surface); }
-  .car[open] { background: var(--open); }
-  .car > summary {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr) auto 20px;
-    align-items: center;
-    gap: 16px;
-    min-height: 60px;
-    padding: 12px 20px;
-  }
-  .car > summary:hover { background: var(--hover); }
-  .make {
-    font: 500 12px/1.2 var(--mono);
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .model-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
-  .model { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
-  .dots { display: flex; gap: 4px; }
+  .chev { transition: transform .2s ease; }
+  details[open] > summary .chev { transform: rotate(180deg); }
+  .spec-k { font-size: .6875rem; letter-spacing: .06em; padding-top: .25rem; }
+  .spec-k-owned { padding-top: .1875rem; }
+  .spec-v { text-wrap: pretty; }
+  .color-chip { font-size: .75rem; }
+  .avoid-label { font-size: .6875rem; letter-spacing: .1em; }
   .dot {
-    width: 10px;
-    height: 10px;
+    width: .5rem;
+    height: .5rem;
     flex: none;
     border-radius: 50%;
-    box-shadow: inset 0 0 0 1px var(--dot-ring);
+    box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .35);
   }
   .dot.red { background: #c8102e; }
   .dot.blue { background: #1f5fbf; }
@@ -293,415 +84,554 @@
   .dot.beige-tradizione { background: #d8c39c; }
   .dot.terra-bruciata { background: #8b4a2c; }
   .dot.crema { background: #efe2c4; }
-  .tag-slot { display: flex; }
-  .chip {
-    font: 500 12px/1 var(--mono);
-    color: var(--muted);
-    background: var(--chip);
-    border-radius: 999px;
-    padding: 6px 10px;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
 
-  /* ---- Spec list (label / value) --------------------------------------- */
-  .specs {
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr);
-    gap: 12px 16px;
-    margin: 0;
-    padding: 4px 20px 24px 132px;
-  }
-  .specs dt {
-    font: 500 12px/1.6 var(--sans);
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding-top: 2px;
-  }
-  .specs dd { margin: 0; font-size: 15px; text-wrap: pretty; }
-  .swatch-list { display: flex; flex-direction: column; gap: 6px; }
-  .swatch-item { display: flex; align-items: center; gap: 8px; }
-  .avoid { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
-  .avoid-label {
-    font: 600 11px/1 var(--mono);
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--avoid);
-    margin-right: 2px;
-  }
-  .avoid-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    line-height: 1;
-    color: var(--avoid);
-    background: var(--avoid-soft);
-    border-radius: 999px;
-    padding: 5px 10px 5px 6px;
-  }
+  /* ---- Budget by year -------------------------------------------------- */
+  .ladder-short { font-family: var(--mono); font-size: .6875rem; white-space: nowrap; }
+  .ladder-bar { height: .25rem; }
+  /* Bar width = the year's max / $320k (the top heading's max). */
+  .ladder .col:nth-child(1) .progress-bar { width: 25%; }
+  .ladder .col:nth-child(2) .progress-bar { width: 37.5%; }
+  .ladder .col:nth-child(3) .progress-bar { width: 50%; }
+  .ladder .col:nth-child(4) .progress-bar { width: 62.5%; }
+  .ladder .col:nth-child(5) .progress-bar { width: 75%; }
+  .ladder .col:nth-child(6) .progress-bar { width: 87.5%; }
+  .ladder .col:nth-child(7) .progress-bar { width: 100%; }
 
-  /* ---- Phone width ----------------------------------------------------- */
-  @media (max-width: 600px) {
-    main { padding-top: 40px; gap: 32px; }
-    .page-head h1 { font-size: 36px; }
-    .car > summary,
-    .owned .cars > li > .car > summary {
-      grid-template-columns: minmax(0, 1fr) auto 20px;
-      gap: 4px 12px;
-      padding: 12px 16px;
-    }
-    .make { grid-column: 1; grid-row: 1; }
-    .model-wrap { grid-column: 1; grid-row: 2; }
-    .tag-slot { grid-column: 2; grid-row: 1 / span 2; }
-    .car > summary > .chev { grid-column: 3; grid-row: 1 / span 2; }
-    .specs { grid-template-columns: 1fr; gap: 2px; padding: 4px 16px 20px; }
-    .specs dd { margin-bottom: 12px; }
-    .year > summary { gap: 10px; }
-    .year-num { font-size: 26px; }
-    .money { font-size: 13px; padding: 7px 10px; }
-  }
-  @media (max-width: 400px) {
-    .year-count { display: none; }
-  }
+  /* ---- Year sections --------------------------------------------------- */
+  .year { scroll-margin-top: 5.5rem; }
+  .year-kicker { font: 500 .625rem/1 var(--mono); letter-spacing: .12em; }
+  .year-num { letter-spacing: -0.03em; line-height: 1.15; }
+  .money { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 </style>
 </head>
-<body>
-<main>
+<body class="bg-body-tertiary text-body">
 
-  <header class="page-head">
-    <div class="kicker">Car Forecast · 2026 → 2031</div>
-    <h1>Car Planning</h1>
-    <p>What I'm looking to buy, by year and budget. Tap a car to see what I'm after.</p>
+<nav class="navbar border-bottom bg-body sticky-top">
+  <div class="container-xl">
+    <span class="navbar-brand d-flex align-items-center gap-2 fw-semibold mb-0">
+      <i class="bi bi-car-front-fill text-danger"></i>Car Forecast
+    </span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="d-none d-sm-inline small text-body-secondary mono" id="summary">16 cars · 7 years</span>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="theme-toggle" aria-label="Toggle theme"><i class="bi bi-moon-stars"></i></button>
+    </div>
+  </div>
+</nav>
+
+<main class="container-xl py-4 py-lg-5">
+  <header class="mb-4 mb-lg-5">
+    <div class="small text-danger text-uppercase fw-medium mb-2 kicker">2026 → 2032</div>
+    <h1 class="display-5 fw-semibold mb-2 page-title">Car Planning</h1>
+    <p class="lead text-body-secondary mb-0 page-lead">What I'm looking to buy, by year and budget. Tap a car to see what I'm after.</p>
   </header>
 
-  <!-- ================================================================== -->
-  <div class="ladder">
-    <div class="ladder-head">
-      <span class="ladder-title">Budget by year</span>
-      <span class="ladder-sum">16 cars · 6 years</span>
-      <button type="button" class="pill" id="toggle-all">Expand all</button>
-    </div>
-    <div class="ladder-scroll">
-      <div class="ladder-cols">
-        <button type="button" class="col open" data-year="2026" aria-controls="y2026" aria-expanded="true">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$50–80k</span></span>
-          <span class="col-meta"><span class="col-year">2026</span><span class="col-count">5 cars</span></span>
-        </button>
-        <button type="button" class="col" data-year="2027" aria-controls="y2027" aria-expanded="false">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$80–120k</span></span>
-          <span class="col-meta"><span class="col-year">2027</span><span class="col-count">4 cars</span></span>
-        </button>
-        <button type="button" class="col" data-year="2028" aria-controls="y2028" aria-expanded="false">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$120–160k</span></span>
-          <span class="col-meta"><span class="col-year">2028</span><span class="col-count">4 cars</span></span>
-        </button>
-        <button type="button" class="col" data-year="2029" aria-controls="y2029" aria-expanded="false">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$160–220k</span></span>
-          <span class="col-meta"><span class="col-year">2029</span><span class="col-count">2 cars</span></span>
-        </button>
-        <button type="button" class="col" data-year="2030" aria-controls="y2030" aria-expanded="false">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$220–260k</span></span>
-          <span class="col-meta"><span class="col-year">2030</span><span class="col-count">No cars yet</span></span>
-        </button>
-        <button type="button" class="col" data-year="2031" aria-controls="y2031" aria-expanded="false">
-          <span class="col-box"><span class="bar"></span><span class="bar-label">$260–300k</span></span>
-          <span class="col-meta"><span class="col-year">2031</span><span class="col-count">1 car</span></span>
-        </button>
+  <div class="row g-4">
+    <aside class="col-12 col-lg-4">
+      <div class="d-flex flex-column gap-4 sticky-lg-top side-sticky">
+
+        <!-- ================================================================ -->
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-body d-flex align-items-center gap-2 py-3">
+            <i class="bi bi-key text-body-secondary"></i>
+            <span class="fw-semibold">Available for trade</span>
+            <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis ms-auto">Owned</span>
+          </div>
+          <details class="owned-car">
+            <summary class="list-group-item list-group-item-action border-0 px-3 py-3 d-flex align-items-center gap-3 text-start bg-body">
+              <div class="flex-grow-1 min-w-0">
+                <div class="small text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                <div class="fs-5 fw-semibold">2018 Cayman 718</div>
+              </div>
+              <i class="bi bi-chevron-down text-body-secondary chev"></i>
+            </summary>
+            <div class="card-body border-top">
+              <dl class="row mb-0 small">
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Trim</dt><dd class="col-7 mb-2">Base 2.0L Turbo</dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Transmission</dt><dd class="col-7 mb-2">PDK</dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Exterior</dt><dd class="col-7 mb-2"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot guards-red"></span>Guards Red</span></div></dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Interior</dt><dd class="col-7 mb-2">Black/Beige</dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Seats</dt><dd class="col-7 mb-2">Sport seats</dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Audio</dt><dd class="col-7 mb-2">Bose</dd>
+                  <dt class="col-5 fw-medium text-body-secondary text-uppercase spec-k spec-k-owned">Options</dt><dd class="col-7 mb-2">No PASM or Sport Chrono</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+
+        <!-- ================================================================ -->
+        <div class="card shadow-sm border-0 ladder">
+          <div class="card-header bg-body d-flex align-items-center gap-2 py-3">
+            <i class="bi bi-cash-stack text-body-secondary"></i>
+            <span class="fw-semibold">Budget by year</span>
+          </div>
+          <div class="card-body">
+            <div class="row row-cols-3 row-cols-sm-4 row-cols-lg-3 row-cols-xl-4 g-2">
+              <div class="col">
+                <button type="button" class="btn btn-success w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2026" aria-controls="y2026" aria-expanded="true">
+                  <span class="fw-semibold tnum">2026</span>
+                  <span class="ladder-short">$50–80k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2027" aria-controls="y2027" aria-expanded="false">
+                  <span class="fw-semibold tnum">2027</span>
+                  <span class="ladder-short">$80–120k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2028" aria-controls="y2028" aria-expanded="false">
+                  <span class="fw-semibold tnum">2028</span>
+                  <span class="ladder-short">$120–160k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2029" aria-controls="y2029" aria-expanded="false">
+                  <span class="fw-semibold tnum">2029</span>
+                  <span class="ladder-short">$160–200k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2030" aria-controls="y2030" aria-expanded="false">
+                  <span class="fw-semibold tnum">2030</span>
+                  <span class="ladder-short">$200–240k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2031" aria-controls="y2031" aria-expanded="false">
+                  <span class="fw-semibold tnum">2031</span>
+                  <span class="ladder-short">$240–280k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-start gap-0 px-2 py-2 text-start" data-year="2032" aria-controls="y2032" aria-expanded="false">
+                  <span class="fw-semibold tnum">2032</span>
+                  <span class="ladder-short">$280–320k</span>
+                  <span class="progress w-100 mt-1 ladder-bar"><span class="progress-bar bg-success"></span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </aside>
+
+    <section class="col-12 col-lg-8">
+      <div class="accordion d-flex flex-column gap-3">
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2026" data-year="2026" open>
+          <summary class="accordion-button py-3">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2026</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">5 cars</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$50k–$80k</span>
+            </span>
+          </summary>
+          <div class="list-group list-group-flush border-top">
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">Cayman S</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2020+</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Must have</dt><dd class="col-sm-9 mb-3 spec-v">PDK, PASM, 14-way seats</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">Taycan 4S</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2021+</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Must have</dt><dd class="col-sm-9 mb-3 spec-v">PASM, Air suspension</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">Macan Electric</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Chevrolet</div>
+                  <div class="fw-semibold">Corvette Stingray</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2021+</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Must have</dt><dd class="col-sm-9 mb-3 spec-v">Convertible, body-color intakes, no spoiler, no sport seats</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Colors</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-column align-items-start gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot torch-red"></span>Torch Red over Tan or Black</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rapid-blue"></span>Rapid Blue over Black, Tan, or Blue</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot red-mist"></span>Red Mist</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">911 Carrera 4 (997)</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2010–2012 (avoiding the 2009 first model year of the 997.2; 2012 was the last 997 year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Trim</dt><dd class="col-sm-9 mb-3 spec-v">Carrera 4, not the base Carrera (the all-wheel-drive cars have the wider rear body)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2027" data-year="2027">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2027</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">4 cars</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$80k–$120k</span>
+            </span>
+          </summary>
+          <div class="list-group list-group-flush border-top">
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">California</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2012–2014 preferred</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Chevrolet</div>
+                  <div class="fw-semibold">Corvette E-Ray</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2024+ (first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Must have</dt><dd class="col-sm-9 mb-3 spec-v">Convertible, body-color intakes, no spoiler, no sport seats</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Colors</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-column align-items-start gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot torch-red"></span>Torch Red over Tan or Black</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rapid-blue"></span>Rapid Blue over Black, Tan, or Blue</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot red-mist"></span>Red Mist</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">911 Carrera 4 / 4S (991)</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2014+ (avoiding the 2013 first model year of the 991 Carrera 4)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Trim</dt><dd class="col-sm-9 mb-3 spec-v">Carrera 4 or 4S, not the base Carrera or Carrera S (the all-wheel-drive cars have the wider rear body)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Lexus</div>
+                  <div class="fw-semibold">LC 500</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">Convertible 2021+ (first model year of the convertible); coupe 2018+</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Body style</dt><dd class="col-sm-9 mb-3 spec-v">Convertible preferred; coupe acceptable</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Powertrain</dt><dd class="col-sm-9 mb-3 spec-v">LC 500 V8 only, not the LC 500h hybrid</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span></div></dd>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2028" data-year="2028">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2028</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">4 cars</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$120k–$160k</span>
+            </span>
+          </summary>
+          <div class="list-group list-group-flush border-top">
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Chevrolet</div>
+                  <div class="fw-semibold">Corvette Z06 (C8)</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2023+ (first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Trim</dt><dd class="col-sm-9 mb-3 spec-v">2LZ</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Must have</dt><dd class="col-sm-9 mb-3 spec-v">Convertible, body-color intakes, no spoiler, no sport seats</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Colors</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-column align-items-start gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot torch-red"></span>Torch Red over Tan or Black</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rapid-blue"></span>Rapid Blue over Black, Tan, or Blue</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot red-mist"></span>Red Mist</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">California T</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2016+ (avoiding the 2015 first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">360 Modena Coupe</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2003–2004 (last two years of production)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Transmission</dt><dd class="col-sm-9 mb-3 spec-v">F1 preferred (or an aftermarket-swapped manual)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Porsche</div>
+                  <div class="fw-semibold">911 Carrera (992)</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2021+ (avoiding the 2020 first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Trim</dt><dd class="col-sm-9 mb-3 spec-v">Base Carrera (every 992 has the wide body)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot red"></span>Red</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot blue"></span>Blue</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot green"></span>Green</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot yellow"></span>Yellow</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot purple"></span>Purple</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot burgundy"></span>Burgundy</span></div><div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot white"></span>White</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot black"></span>Black</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot silver"></span>Silver</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot gray"></span>Gray</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot pink"></span>Pink</span></div></dd>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2029" data-year="2029">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2029</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">2 cars</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$160k–$200k</span>
+            </span>
+          </summary>
+          <div class="list-group list-group-flush border-top">
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">F430 Coupe</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2006+ (avoiding the 2005 first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Transmission</dt><dd class="col-sm-9 mb-3 spec-v">F1 preferred (or an aftermarket-swapped manual)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">Portofino</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2019+ (avoiding the 2018 first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2030" data-year="2030">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2030</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">No cars yet</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$200k–$240k</span>
+            </span>
+          </summary>
+          <div class="accordion-body border-top text-body-secondary d-flex align-items-center gap-2"><i class="bi bi-inbox"></i>No cars picked yet.</div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2031" data-year="2031">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2031</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">1 car</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$240k–$280k</span>
+            </span>
+          </summary>
+          <div class="list-group list-group-flush border-top">
+            <details class="list-group-item p-0 car">
+              <summary class="list-group-item-action d-flex align-items-center gap-3 px-3 py-3 text-body">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="text-uppercase text-body-secondary fw-medium make">Ferrari</div>
+                  <div class="fw-semibold">488 Spider</div>
+                </div>
+                <i class="bi bi-chevron-down text-body-secondary chev"></i>
+              </summary>
+              <div class="px-3 pb-3 pt-1 bg-body-tertiary border-top">
+                <dl class="row mb-0 pt-2">
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Year</dt><dd class="col-sm-9 mb-3 spec-v">2017+ (avoiding the 2016 first model year)</dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Exterior</dt><dd class="col-sm-9 mb-3 spec-v"><div class="d-flex flex-wrap gap-1"><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot rosso-corsa"></span>Rosso Corsa (preferred)</span><span class="badge rounded-pill bg-body-secondary text-body border fw-medium d-inline-flex align-items-center gap-1 color-chip"><span class="dot light-blue"></span>Light or medium Blue</span></div></dd>
+                  <dt class="col-sm-3 fw-medium text-body-secondary text-uppercase spec-k">Interior</dt><dd class="col-sm-9 mb-3 spec-v">Cuoio, Sabbia, or Iroko<div class="d-flex flex-wrap align-items-center gap-1 mt-2"><span class="fw-semibold text-warning-emphasis text-uppercase me-1 avoid-label"><i class="bi bi-slash-circle me-1"></i>Avoid</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot beige-tradizione"></span>Beige Tradizione</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot terra-bruciata"></span>Terra Bruciata</span><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-medium d-inline-flex align-items-center gap-1"><span class="dot crema"></span>Crema</span></div></dd>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- ============================================================== -->
+        <details class="accordion-item border rounded-3 overflow-hidden shadow-sm year" id="y2032" data-year="2032">
+          <summary class="accordion-button py-3 collapsed">
+            <span class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 w-100 me-3">
+              <span class="d-flex flex-column me-auto">
+                <span class="text-uppercase text-body-secondary year-kicker">Target</span>
+                <span class="fs-3 fw-semibold year-num">2032</span>
+              </span>
+              <span class="small text-body-secondary d-none d-sm-inline year-count">No cars yet</span>
+              <span class="badge rounded-pill bg-success-subtle text-success-emphasis fs-6 fw-semibold px-3 py-2 money">$280k–$320k</span>
+            </span>
+          </summary>
+          <div class="accordion-body border-top text-body-secondary d-flex align-items-center gap-2"><i class="bi bi-inbox"></i>No cars picked yet.</div>
+        </details>
+
+      </div>
+    </section>
   </div>
-
-  <!-- ================================================================== -->
-  <section class="owned">
-    <div class="eyebrow">Currently own</div>
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">2018 Cayman 718</span><span class="dots" aria-hidden="true"><span class="dot guards-red" title="Guards Red"></span></span></span><span class="tag-slot"><span class="owned-badge">Owned</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Trim</dt><dd>Base 2.0L Turbo</dd>
-          <dt>Transmission</dt><dd>PDK</dd>
-          <dt>Exterior</dt><dd>Guards Red</dd>
-          <dt>Interior</dt><dd>Black/Beige</dd>
-          <dt>Seats</dt><dd>Sport seats</dd>
-          <dt>Audio</dt><dd>Bose</dd>
-          <dt>Options</dt><dd>No PASM or Sport Chrono</dd>
-        </dl>
-      </details></li>
-    </ul>
-  </section>
-
-  <div class="years">
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2026">
-  <details class="year" data-year="2026" open>
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2026</span></span>
-      <span class="year-count">5 cars</span>
-      <span class="money">$50k–$80k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">Cayman S</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"><span class="chip">2020+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2020+</dd>
-          <dt>Must have</dt><dd>PDK, PASM, 14-way seats</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">Taycan 4S</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"><span class="chip">2021+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+</dd>
-          <dt>Must have</dt><dd>PASM, Air suspension</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">Macan Electric</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Chevrolet</span><span class="model-wrap"><span class="model">Corvette Stingray</span><span class="dots" aria-hidden="true"><span class="dot torch-red" title="Torch Red"></span><span class="dot rapid-blue" title="Rapid Blue"></span></span></span><span class="tag-slot"><span class="chip">2021+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd>
-            <span class="swatch-list"><span class="swatch-item"><span class="dot torch-red" title="Torch Red"></span>Torch Red over Tan or Black</span><span class="swatch-item"><span class="dot rapid-blue" title="Rapid Blue"></span>Rapid Blue over Black, Tan, or Blue</span></span>
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot red-mist" title="Red Mist"></span>Red Mist</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">911 Carrera 4 (997)</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"><span class="chip">2010–12</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2010–2012 (avoiding the 2009 first model year of the 997.2; 2012 was the last 997 year)</dd>
-          <dt>Trim</dt><dd>Carrera 4, not the base Carrera (the all-wheel-drive cars have the wider rear body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-    </ul>
-    </div>
-  </details>
-  </section>
-
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2027">
-  <details class="year" data-year="2027">
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2027</span></span>
-      <span class="year-count">4 cars</span>
-      <span class="money">$80k–$120k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">California</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2012–14</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2012–2014 preferred</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Chevrolet</span><span class="model-wrap"><span class="model">Corvette E-Ray</span><span class="dots" aria-hidden="true"><span class="dot torch-red" title="Torch Red"></span><span class="dot rapid-blue" title="Rapid Blue"></span></span></span><span class="tag-slot"><span class="chip">2024+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2024+ (first model year)</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd>
-            <span class="swatch-list"><span class="swatch-item"><span class="dot torch-red" title="Torch Red"></span>Torch Red over Tan or Black</span><span class="swatch-item"><span class="dot rapid-blue" title="Rapid Blue"></span>Rapid Blue over Black, Tan, or Blue</span></span>
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot red-mist" title="Red Mist"></span>Red Mist</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">911 Carrera 4 / 4S (991)</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"><span class="chip">2014+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2014+ (avoiding the 2013 first model year of the 991 Carrera 4)</dd>
-          <dt>Trim</dt><dd>Carrera 4 or 4S, not the base Carrera or Carrera S (the all-wheel-drive cars have the wider rear body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Lexus</span><span class="model-wrap"><span class="model">LC 500</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span></span></span><span class="tag-slot"><span class="chip">2018+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>Convertible 2021+ (first model year of the convertible); coupe 2018+</dd>
-          <dt>Body style</dt><dd>Convertible preferred; coupe acceptable</dd>
-          <dt>Powertrain</dt><dd>LC 500 V8 only, not the LC 500h hybrid</dd>
-          <dt>Exterior</dt><dd>Red, Blue, or Green only</dd>
-        </dl>
-      </details></li>
-    </ul>
-    </div>
-  </details>
-  </section>
-
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2028">
-  <details class="year" data-year="2028">
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2028</span></span>
-      <span class="year-count">4 cars</span>
-      <span class="money">$120k–$160k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Chevrolet</span><span class="model-wrap"><span class="model">Corvette Z06 (C8)</span><span class="dots" aria-hidden="true"><span class="dot torch-red" title="Torch Red"></span><span class="dot rapid-blue" title="Rapid Blue"></span></span></span><span class="tag-slot"><span class="chip">2023+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2023+ (first model year)</dd>
-          <dt>Trim</dt><dd>2LZ</dd>
-          <dt>Must have</dt><dd>Convertible, body-color intakes, no spoiler, no sport seats</dd>
-          <dt>Colors</dt><dd>
-            <span class="swatch-list"><span class="swatch-item"><span class="dot torch-red" title="Torch Red"></span>Torch Red over Tan or Black</span><span class="swatch-item"><span class="dot rapid-blue" title="Rapid Blue"></span>Rapid Blue over Black, Tan, or Blue</span></span>
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot red-mist" title="Red Mist"></span>Red Mist</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">California T</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2016+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2016+ (avoiding the 2015 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">360 Modena Coupe</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2003–04</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2003–2004 (last two years of production)</dd>
-          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Porsche</span><span class="model-wrap"><span class="model">911 Carrera (992)</span><span class="dots" aria-hidden="true"><span class="dot red" title="Red"></span><span class="dot blue" title="Blue"></span><span class="dot green" title="Green"></span><span class="dot yellow" title="Yellow"></span><span class="dot purple" title="Purple"></span><span class="dot burgundy" title="Burgundy"></span></span></span><span class="tag-slot"><span class="chip">2021+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2021+ (avoiding the 2020 first model year)</dd>
-          <dt>Trim</dt><dd>Base Carrera (every 992 has the wide body)</dd>
-          <dt>Exterior</dt><dd>Red, Blue, Green, Yellow, Purple, Burgundy
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot white" title="White"></span>White</span><span class="avoid-chip"><span class="dot black" title="Black"></span>Black</span><span class="avoid-chip"><span class="dot silver" title="Silver"></span>Silver</span><span class="avoid-chip"><span class="dot gray" title="Gray"></span>Gray</span><span class="avoid-chip"><span class="dot pink" title="Pink"></span>Pink</span></span></dd>
-        </dl>
-      </details></li>
-    </ul>
-    </div>
-  </details>
-  </section>
-
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2029">
-  <details class="year" data-year="2029">
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2029</span></span>
-      <span class="year-count">2 cars</span>
-      <span class="money">$160k–$220k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">F430 Coupe</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2006+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2006+ (avoiding the 2005 first model year)</dd>
-          <dt>Transmission</dt><dd>F1 preferred (or an aftermarket-swapped manual)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">Portofino</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2019+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2019+ (avoiding the 2018 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-    </ul>
-    </div>
-  </details>
-  </section>
-
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2030">
-  <details class="year" data-year="2030">
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2030</span></span>
-      <span class="year-count">No cars yet</span>
-      <span class="money">$220k–$260k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <p class="empty">No cars picked yet.</p>
-    </div>
-  </details>
-  </section>
-
-  <!-- ================================================================== -->
-  <section class="year-sec" id="y2031">
-  <details class="year" data-year="2031">
-    <summary>
-      <span class="year-title"><span class="year-kicker">Target</span><span class="year-num">2031</span></span>
-      <span class="year-count">1 car</span>
-      <span class="money">$260k–$300k</span>
-      <span class="year-chev"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></span>
-    </summary>
-    <div class="year-body">
-    <ul class="cars">
-      <li><details class="car">
-        <summary><span class="make">Ferrari</span><span class="model-wrap"><span class="model">488 Spider</span><span class="dots" aria-hidden="true"><span class="dot rosso-corsa" title="Rosso Corsa"></span><span class="dot light-blue" title="Light Blue"></span></span></span><span class="tag-slot"><span class="chip">2017+</span></span><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg></summary>
-        <dl class="specs">
-          <dt>Year</dt><dd>2017+ (avoiding the 2016 first model year)</dd>
-          <dt>Exterior</dt><dd>Rosso Corsa (preferred); might also consider a light or medium Blue</dd>
-          <dt>Interior</dt><dd>Cuoio, Sabbia, or Iroko
-            <span class="avoid"><span class="avoid-label">Avoid</span><span class="avoid-chip"><span class="dot beige-tradizione" title="Beige Tradizione"></span>Beige Tradizione</span><span class="avoid-chip"><span class="dot terra-bruciata" title="Terra Bruciata"></span>Terra Bruciata</span><span class="avoid-chip"><span class="dot crema" title="Crema"></span>Crema</span></span></dd>
-        </dl>
-      </details></li>
-    </ul>
-    </div>
-  </details>
-  </section>
-  </div>
-
 </main>
+
 <script>
-  // Keeps the budget ladder and the Expand/Collapse all button in step with the year sections.
+  // Keeps the budget buttons and the year headers in step with the year sections, and
+  // handles the light/dark toggle. Car and year toggles are native <details>.
   (function () {
+    var root = document.documentElement;
+    var themeBtn = document.getElementById('theme-toggle');
+    function showTheme() {
+      themeBtn.firstElementChild.className = root.getAttribute('data-bs-theme') === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    }
+    themeBtn.addEventListener('click', function () {
+      var t = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-bs-theme', t);
+      try { localStorage.setItem('theme', t); } catch (e) {}
+      showTheme();
+    });
+    showTheme();
+
     var years = Array.prototype.slice.call(document.querySelectorAll('details.year'));
-    var all = document.getElementById('toggle-all');
-    function col(id) { return document.querySelector('.col[data-year="' + id + '"]'); }
+    function col(id) { return document.querySelector('.ladder button[data-year="' + id + '"]'); }
     function sync() {
       years.forEach(function (d) {
         var b = col(d.dataset.year);
-        b.classList.toggle('open', d.open);
+        b.classList.toggle('btn-success', d.open);
+        b.classList.toggle('btn-outline-secondary', !d.open);
         b.setAttribute('aria-expanded', String(d.open));
+        d.querySelector('summary').classList.toggle('collapsed', !d.open);
       });
-      all.textContent = years.every(function (d) { return d.open; }) ? 'Collapse all' : 'Expand all';
     }
     years.forEach(function (d) {
       d.addEventListener('toggle', sync);
       col(d.dataset.year).addEventListener('click', function () {
         d.open = !d.open;
-        if (d.open) d.parentNode.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
-    });
-    all.addEventListener('click', function () {
-      var open = !years.every(function (d) { return d.open; });
-      years.forEach(function (d) { d.open = open; });
     });
     sync();
   })();
